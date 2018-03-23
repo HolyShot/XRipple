@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+        <declare-styleable name="WaveView">
+            <attr name="waveLength" format="dimension"/>
+            <attr name="rise" format="boolean"/>
+            <attr name="boatBitmap" format="reference"/>
+            <attr name="levelY" format="dimension"/>
+            <attr name="waveHeight" format="dimension"/>
+            <attr name="darution" format="integer"/>
+        </declare-styleable>
+</resources>
