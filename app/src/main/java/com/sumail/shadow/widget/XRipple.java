@@ -98,6 +98,11 @@ public class XRipple extends View {
         height= heightSize;
     }
 
+    /**
+     * 图片裁剪 setXfermode
+     * @param mBitmap
+     * @return
+     */
     private Bitmap getcirculeBitmap(Bitmap mBitmap) {
         try {
             if (mBitmap == null){
