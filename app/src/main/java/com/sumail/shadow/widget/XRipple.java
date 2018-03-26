@@ -40,10 +40,13 @@ public class XRipple extends View {
     private Bitmap mBitmap;
     private Paint mPain;
     private Path mPath;
+    private Path mPath1;
     private int width;
     private int height;
     private int dex;
+    private int dey;
     private Region mRegion;
+    private Region mRegion1;
 
     public XRipple(Context context) {
         this(context,null);
@@ -82,10 +85,11 @@ public class XRipple extends View {
             mBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.tot,options);
         }
         mPain = new Paint();
-        mPain.setColor(Color.BLUE);
+        mPain.setColor(getResources().getColor(R.color.wavebg));
         mPain.setStyle(Paint.Style.FILL);
 
         mPath = new Path();
+        mPath1 = new Path();
     }
 
     @Override
@@ -141,41 +145,69 @@ public class XRipple extends View {
         super.onDraw(canvas);
         setPath();
         canvas.drawPath(mPath,mPain);
+        canvas.drawPath(mPath1,mPain);
         Rect bounds = mRegion.getBounds();
-        Log.d(App.TAG,"bounds:" + bounds);
-        Log.d(App.TAG,"mBitmap:" + mBitmap.getHeight() + ","+ mBitmap.getWidth());
+        Rect bounds1 = mRegion1.getBounds();
+        int currtentTop = 0;
+        if (bounds.top == 0){
+            currtentTop = bounds1.top;
+        }else if (bounds1.top == 0){
+            currtentTop = bounds.top;
+        }
+        if (bounds1.top < bounds.top || bounds1.bottom < bounds.bottom){
+            bounds = bounds1;
+        }
+        Paint p = new Paint();
+        if (bounds.top > 0 || bounds.right > 0  ) {
 
-        if (bounds.top > 0 || bounds.right > 0) {
             if (bounds.top < levelY) {
-                canvas.drawBitmap(mBitmap, bounds.left - mBitmap.getWidth() / 2, bounds.top - mBitmap.getHeight(), mPain);
+                canvas.drawBitmap(mBitmap, bounds.left - mBitmap.getWidth() / 2, bounds.top - mBitmap.getHeight(), p);
             } else {
-                canvas.drawBitmap(mBitmap, bounds.left - mBitmap.getWidth() / 2, bounds.bottom - mBitmap.getHeight(), mPain);
+                canvas.drawBitmap(mBitmap, bounds.left - mBitmap.getWidth() / 2, bounds.bottom - mBitmap.getHeight(), p);
             }
         }else {
-            canvas.drawBitmap(mBitmap, width/2 - mBitmap.getWidth() / 2, levelY - mBitmap.getHeight(), mPain);
+            if (currtentTop > levelY){
+                canvas.drawBitmap(mBitmap, width/2 - mBitmap.getWidth() / 2, currtentTop- mBitmap.getHeight(), p);
+            }else {
+                canvas.drawBitmap(mBitmap, width/2 - mBitmap.getWidth() / 2, currtentTop- mBitmap.getHeight(), p);
+            }
         }
 
     }
 
     private void setPath() {
         mPath.reset();
-        mPath.moveTo(-waveLength + dex,levelY );
+        mPath1.reset();
+        Log.d(App.TAG,"dey:" +dey);
+        mPath.moveTo(-waveLength + dex,levelY -dey);
+        mPath1.moveTo(-waveLength- waveLength /4 + dex,levelY -dey);
         float halfWaveLenght = waveLength / 2;
             for (int i = -waveLength; i < width + waveLength; i += waveLength) {
-              //  mPath.quadTo(i + halfWaveLenght / 2,originY - waveHeight,i + halfWaveLenght,0);
-             //   mPath.quadTo(i + 3 * halfWaveLenght/ 2  ,originY + waveHeight,i + waveLength,0);
                 //相对路径 相对于 moveTo点位（0,0）
                 mPath.rQuadTo(halfWaveLenght / 2, -waveHeight, halfWaveLenght, 0);
                 mPath.rQuadTo(halfWaveLenght / 2, waveHeight, halfWaveLenght,0 );
             }
+
+            for (int i = -waveLength -waveLength/4; i < width + waveLength; i += waveLength) {
+                //相对路径 相对于 moveTo点位（0,0）
+                mPath1.rQuadTo(halfWaveLenght / 2, -waveHeight, halfWaveLenght, 0);
+                mPath1.rQuadTo(halfWaveLenght / 2, waveHeight, halfWaveLenght,0 );
+            }
+
             mRegion = new Region();
+            mRegion1 = new Region();
             int x = width/ 2;
-        Log.d(App.TAG,"mRegion:" + width + "," + height);
-            Region clip = new Region((int)(x - 0.1),0,width/2,2* height);
+            Region clip = new Region((int)(x - 0.1),0,x,height);
             mRegion.setPath(mPath,clip);
+            mRegion1.setPath(mPath1,clip);
+
             mPath.lineTo(width, height);
             mPath.lineTo(0, height);
             mPath.close();
+
+            mPath1.lineTo(width, height);
+            mPath1.lineTo(0, height);
+            mPath1.close();
         }
     private ValueAnimator valueAnimator;
         public void setAnimation(){
@@ -188,15 +220,23 @@ public class XRipple extends View {
                 public void onAnimationUpdate(ValueAnimator animation) {
                     float fraction = (float) animation.getAnimatedValue();
                     dex = (int) (waveLength * fraction);
-                    if (rise){
-                        dex += 1;
-                    }
+        /*            if (rise){
+                        dey += 1;
+                    }*/
                     postInvalidate();
-
-
                 }
             });
             valueAnimator.start();
         }
+
+        public void setWaveUp(float percent){
+            dey = (int)(percent * levelY);
+            Log.d(App.TAG,"dey1 :" +dey + ",percent:" + percent+ ",levelY：" + levelY);
+        }
+
+        public void resetWaveUp(float percent){
+            dey = (int)(1 - percent) * dey;
+        }
+
 
 }
